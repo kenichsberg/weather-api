@@ -1,0 +1,702 @@
+[
+  {
+    "city": "Naomishire",
+    "lat": 13.839309,
+    "lon": -11.123663,
+    "temp": -12.3,
+    "humidity": 78.5
+  },
+  {
+    "city": "Bennettstad",
+    "lat": -32.189861,
+    "lon": -24.260304,
+    "temp": 32.7,
+    "humidity": 9.2
+  },
+  {
+    "city": "Hettieworth",
+    "lat": -19.960451,
+    "lon": -69.964576,
+    "temp": -2.9,
+    "humidity": 11
+  },
+  {
+    "city": "North Scotland",
+    "lat": 31.39944,
+    "lon": 175.294946,
+    "temp": 2.5,
+    "humidity": 44.4
+  },
+  {
+    "city": "Fort Tracestad",
+    "lat": 58.870196,
+    "lon": -105.485247,
+    "temp": -18.6,
+    "humidity": 30.4
+  },
+  {
+    "city": "Aidanmouth",
+    "lat": 30.802615,
+    "lon": 26.208978,
+    "temp": -0.8,
+    "humidity": 78.9
+  },
+  {
+    "city": "Council Bluffs",
+    "lat": 85.12122,
+    "lon": 173.054443,
+    "temp": -0.7,
+    "humidity": 27.5
+  },
+  {
+    "city": "Ernestoberg",
+    "lat": -17.594209,
+    "lon": 54.7482,
+    "temp": -6.9,
+    "humidity": 90.6
+  },
+  {
+    "city": "Boganside",
+    "lat": 1.931349,
+    "lon": -161.874172,
+    "temp": 25.5,
+    "humidity": 4.6
+  },
+  {
+    "city": "East Mateo",
+    "lat": 9.027957,
+    "lon": -114.387217,
+    "temp": -7.9,
+    "humidity": 12.4
+  },
+  {
+    "city": "Fort Haven",
+    "lat": -36.083385,
+    "lon": -83.532654,
+    "temp": -8.9,
+    "humidity": 4.8
+  },
+  {
+    "city": "Tucson",
+    "lat": -22.843355,
+    "lon": 32.939276,
+    "temp": -3.3,
+    "humidity": 85.7
+  },
+  {
+    "city": "Gardena",
+    "lat": -38.728463,
+    "lon": -89.88787,
+    "temp": -11.7,
+    "humidity": 25.7
+  },
+  {
+    "city": "Sanford",
+    "lat": 13.615729,
+    "lon": -30.472782,
+    "temp": 5,
+    "humidity": 15.9
+  },
+  {
+    "city": "Fort Faustinocester",
+    "lat": 11.31791,
+    "lon": -45.547733,
+    "temp": -19,
+    "humidity": 39.9
+  },
+  {
+    "city": "Bel Air South",
+    "lat": 49.951114,
+    "lon": 29.775104,
+    "temp": 13.9,
+    "humidity": 83.3
+  },
+  {
+    "city": "Legrosbury",
+    "lat": -8.160499,
+    "lon": -143.965285,
+    "temp": -4.5,
+    "humidity": 23.6
+  },
+  {
+    "city": "North Bulah",
+    "lat": -69.572095,
+    "lon": -157.15345,
+    "temp": 12,
+    "humidity": 68
+  },
+  {
+    "city": "Broken Arrow",
+    "lat": 41.08888,
+    "lon": -48.045733,
+    "temp": 36.2,
+    "humidity": 62.8
+  },
+  {
+    "city": "West Jo",
+    "lat": 15.258784,
+    "lon": 178.553186,
+    "temp": -5.9,
+    "humidity": 2
+  },
+  {
+    "city": "South Milford",
+    "lat": -73.376888,
+    "lon": 132.107283,
+    "temp": -3,
+    "humidity": 28.8
+  },
+  {
+    "city": "Euless",
+    "lat": 45.995287,
+    "lon": 162.323448,
+    "temp": 36,
+    "humidity": 100
+  },
+  {
+    "city": "Rempelton",
+    "lat": 49.791066,
+    "lon": 73.445387,
+    "temp": 1.4,
+    "humidity": 74.3
+  },
+  {
+    "city": "Port Lambertton",
+    "lat": 35.855735,
+    "lon": -105.809231,
+    "temp": 28.9,
+    "humidity": 96.7
+  },
+  {
+    "city": "Gilbert",
+    "lat": -41.235072,
+    "lon": 129.952573,
+    "temp": -7.7,
+    "humidity": 4.3
+  },
+  {
+    "city": "New Zelda",
+    "lat": -6.848875,
+    "lon": -47.71675,
+    "temp": 35.4,
+    "humidity": 36.6
+  },
+  {
+    "city": "East Dallin",
+    "lat": 57.255171,
+    "lon": 17.790041,
+    "temp": 4.5,
+    "humidity": 7.7
+  },
+  {
+    "city": "Cummeratahaven",
+    "lat": -46.309642,
+    "lon": 49.582481,
+    "temp": 10.6,
+    "humidity": 92.3
+  },
+  {
+    "city": "Noahberg",
+    "lat": -60.174796,
+    "lon": 127.899833,
+    "temp": 24.3,
+    "humidity": 16.7
+  },
+  {
+    "city": "West Rick",
+    "lat": 49.491098,
+    "lon": -92.534802,
+    "temp": 27,
+    "humidity": 11.5
+  },
+  {
+    "city": "Lake Amaya",
+    "lat": -59.141336,
+    "lon": -24.121541,
+    "temp": 21.6,
+    "humidity": 58.9
+  },
+  {
+    "city": "Fort Nikkoshire",
+    "lat": 53.435481,
+    "lon": -102.637907,
+    "temp": -15.5,
+    "humidity": 67.1
+  },
+  {
+    "city": "East Justyn",
+    "lat": -61.960367,
+    "lon": -103.362777,
+    "temp": -9.9,
+    "humidity": 55.3
+  },
+  {
+    "city": "Lake Brantstad",
+    "lat": 5.070923,
+    "lon": 75.540179,
+    "temp": -6.1,
+    "humidity": 67
+  },
+  {
+    "city": "Kuhncester",
+    "lat": 46.350617,
+    "lon": -77.486953,
+    "temp": 15.5,
+    "humidity": 14.5
+  },
+  {
+    "city": "Ellabury",
+    "lat": 76.201695,
+    "lon": 162.174821,
+    "temp": 15.3,
+    "humidity": 2.9
+  },
+  {
+    "city": "Myleneton",
+    "lat": -8.417203,
+    "lon": -111.391056,
+    "temp": -3.8,
+    "humidity": 8.2
+  },
+  {
+    "city": "Janiceland",
+    "lat": -11.851089,
+    "lon": -6.939497,
+    "temp": 35.3,
+    "humidity": 75.3
+  },
+  {
+    "city": "Kayceefield",
+    "lat": 18.39233,
+    "lon": 14.687082,
+    "temp": 21.7,
+    "humidity": 18.2
+  },
+  {
+    "city": "Yostberg",
+    "lat": -29.304426,
+    "lon": 63.078854,
+    "temp": -18.1,
+    "humidity": 27.1
+  },
+  {
+    "city": "Thaddeusfurt",
+    "lat": 60.191186,
+    "lon": -91.459093,
+    "temp": 23.3,
+    "humidity": 12.2
+  },
+  {
+    "city": "North Jaidenside",
+    "lat": -18.198429,
+    "lon": -96.737355,
+    "temp": 20.9,
+    "humidity": 94.2
+  },
+  {
+    "city": "Krajcikland",
+    "lat": -34.050342,
+    "lon": 27.880691,
+    "temp": 30.1,
+    "humidity": 37.5
+  },
+  {
+    "city": "New Alycia",
+    "lat": -85.404996,
+    "lon": -41.750878,
+    "temp": 8,
+    "humidity": 4.2
+  },
+  {
+    "city": "Williamsonchester",
+    "lat": -8.986558,
+    "lon": -155.255896,
+    "temp": 16.1,
+    "humidity": 96.9
+  },
+  {
+    "city": "Emmiefort",
+    "lat": 75.136304,
+    "lon": 45.527932,
+    "temp": 2.1,
+    "humidity": 75.9
+  },
+  {
+    "city": "Coracester",
+    "lat": -16.222023,
+    "lon": 18.092558,
+    "temp": -9.1,
+    "humidity": 91.4
+  },
+  {
+    "city": "East Vern",
+    "lat": 68.921274,
+    "lon": -97.171789,
+    "temp": 30.5,
+    "humidity": 49.8
+  },
+  {
+    "city": "South Johnnie",
+    "lat": -79.99878,
+    "lon": 57.619808,
+    "temp": 13.3,
+    "humidity": 87.2
+  },
+  {
+    "city": "Clarabelleborough",
+    "lat": -66.542978,
+    "lon": 38.888014,
+    "temp": -18,
+    "humidity": 78.6
+  },
+  {
+    "city": "East Katherineville",
+    "lat": 79.002497,
+    "lon": -107.013658,
+    "temp": -9.7,
+    "humidity": 53.7
+  },
+  {
+    "city": "Palo Alto",
+    "lat": 29.604958,
+    "lon": 65.345416,
+    "temp": -18.4,
+    "humidity": 13.3
+  },
+  {
+    "city": "Clarissastad",
+    "lat": -19.857095,
+    "lon": 127.360108,
+    "temp": -6.3,
+    "humidity": 61.6
+  },
+  {
+    "city": "Paucekbury",
+    "lat": -72.284358,
+    "lon": -111.994384,
+    "temp": 30.3,
+    "humidity": 5.8
+  },
+  {
+    "city": "Andreland",
+    "lat": 17.091792,
+    "lon": 49.532341,
+    "temp": 10.8,
+    "humidity": 27.9
+  },
+  {
+    "city": "North Herminiaview",
+    "lat": -14.966712,
+    "lon": 131.232116,
+    "temp": -11.6,
+    "humidity": 79.3
+  },
+  {
+    "city": "Pouroschester",
+    "lat": 49.328102,
+    "lon": 119.814656,
+    "temp": -11.4,
+    "humidity": 61.4
+  },
+  {
+    "city": "Port Augustus",
+    "lat": -60.456528,
+    "lon": 18.96503,
+    "temp": -1.9,
+    "humidity": 11.1
+  },
+  {
+    "city": "Huntersville",
+    "lat": -53.347906,
+    "lon": 169.643103,
+    "temp": 32.6,
+    "humidity": 67.8
+  },
+  {
+    "city": "Marysville",
+    "lat": -46.589446,
+    "lon": -71.396505,
+    "temp": 23.2,
+    "humidity": 78
+  },
+  {
+    "city": "Poinciana",
+    "lat": -58.563795,
+    "lon": -49.752801,
+    "temp": 31,
+    "humidity": 37
+  },
+  {
+    "city": "Juneport",
+    "lat": -9.05516,
+    "lon": 67.328232,
+    "temp": 18.1,
+    "humidity": 92.4
+  },
+  {
+    "city": "West Brentmouth",
+    "lat": -34.607749,
+    "lon": 138.870975,
+    "temp": 17.7,
+    "humidity": 23
+  },
+  {
+    "city": "Strackeborough",
+    "lat": -82.052366,
+    "lon": 99.982537,
+    "temp": 33.1,
+    "humidity": 42.3
+  },
+  {
+    "city": "Eldoracester",
+    "lat": -72.417485,
+    "lon": -94.556095,
+    "temp": -9.9,
+    "humidity": 34.1
+  },
+  {
+    "city": "South Lionel",
+    "lat": -54.321957,
+    "lon": -53.957452,
+    "temp": 21.1,
+    "humidity": 87.4
+  },
+  {
+    "city": "New Angusstad",
+    "lat": -65.4828,
+    "lon": -171.944019,
+    "temp": 6.8,
+    "humidity": 4.2
+  },
+  {
+    "city": "West Anabelleville",
+    "lat": -46.49613,
+    "lon": 15.608214,
+    "temp": 23.6,
+    "humidity": 98
+  },
+  {
+    "city": "East Tiffany",
+    "lat": -34.403857,
+    "lon": -89.760448,
+    "temp": -17.3,
+    "humidity": 64
+  },
+  {
+    "city": "Dearborn",
+    "lat": 5.428817,
+    "lon": -40.210078,
+    "temp": 11.2,
+    "humidity": 23.9
+  },
+  {
+    "city": "East Wilfordville",
+    "lat": -80.590345,
+    "lon": -31.418137,
+    "temp": 4.7,
+    "humidity": 88.5
+  },
+  {
+    "city": "Lake Jackworth",
+    "lat": 10.032492,
+    "lon": 6.105734,
+    "temp": -7.9,
+    "humidity": 23
+  },
+  {
+    "city": "Moshehaven",
+    "lat": -17.415016,
+    "lon": 77.612826,
+    "temp": -12.2,
+    "humidity": 20.6
+  },
+  {
+    "city": "New Tony",
+    "lat": 29.368037,
+    "lon": 168.471712,
+    "temp": -0.3,
+    "humidity": 53.7
+  },
+  {
+    "city": "Everettecester",
+    "lat": -40.025948,
+    "lon": 165.702978,
+    "temp": -15.7,
+    "humidity": 90.1
+  },
+  {
+    "city": "Gottliebport",
+    "lat": -75.802405,
+    "lon": 6.138545,
+    "temp": 37,
+    "humidity": 34.6
+  },
+  {
+    "city": "North Flavie",
+    "lat": -63.908639,
+    "lon": 18.554575,
+    "temp": 12.9,
+    "humidity": 49.5
+  },
+  {
+    "city": "West Shad",
+    "lat": 60.387965,
+    "lon": 142.734946,
+    "temp": 15.2,
+    "humidity": 75.8
+  },
+  {
+    "city": "Bernitashire",
+    "lat": -32.565236,
+    "lon": -147.751543,
+    "temp": 22.3,
+    "humidity": 38.4
+  },
+  {
+    "city": "Fort Cecelia",
+    "lat": 3.86934,
+    "lon": 73.630342,
+    "temp": 17.9,
+    "humidity": 94.9
+  },
+  {
+    "city": "Ankundington",
+    "lat": -27.823347,
+    "lon": -106.613962,
+    "temp": -8.7,
+    "humidity": 88.9
+  },
+  {
+    "city": "Odieburgh",
+    "lat": 75.437348,
+    "lon": -134.962013,
+    "temp": 38.5,
+    "humidity": 62.5
+  },
+  {
+    "city": "North Colemanchester",
+    "lat": -24.347612,
+    "lon": -118.622009,
+    "temp": 36.9,
+    "humidity": 44.9
+  },
+  {
+    "city": "North Leonelberg",
+    "lat": -37.943563,
+    "lon": 72.900791,
+    "temp": -9,
+    "humidity": 82.7
+  },
+  {
+    "city": "Lake Isidro",
+    "lat": 60.05123,
+    "lon": -101.913205,
+    "temp": 35.6,
+    "humidity": 27.6
+  },
+  {
+    "city": "Priceworth",
+    "lat": 62.488914,
+    "lon": -102.214923,
+    "temp": 22.2,
+    "humidity": 70.2
+  },
+  {
+    "city": "Schultzstead",
+    "lat": -8.73352,
+    "lon": -52.809794,
+    "temp": 37,
+    "humidity": 60.9
+  },
+  {
+    "city": "Andrewburgh",
+    "lat": 61.069473,
+    "lon": 74.973663,
+    "temp": 13.1,
+    "humidity": 9.1
+  },
+  {
+    "city": "South Westley",
+    "lat": -70.67787,
+    "lon": 50.688886,
+    "temp": 32.7,
+    "humidity": 13.5
+  },
+  {
+    "city": "Deltona",
+    "lat": -62.10123,
+    "lon": -140.861029,
+    "temp": -0.4,
+    "humidity": 99.8
+  },
+  {
+    "city": "La Mesa",
+    "lat": -0.621847,
+    "lon": 111.194571,
+    "temp": -9.4,
+    "humidity": 37.3
+  },
+  {
+    "city": "Rippinland",
+    "lat": -41.192203,
+    "lon": 149.203388,
+    "temp": -9.5,
+    "humidity": 10.2
+  },
+  {
+    "city": "East Rosariobury",
+    "lat": 81.223142,
+    "lon": 113.12769,
+    "temp": 26.1,
+    "humidity": 83.7
+  },
+  {
+    "city": "Port Maribelboro",
+    "lat": 8.090542,
+    "lon": 110.481416,
+    "temp": -5.2,
+    "humidity": 21.1
+  },
+  {
+    "city": "Kellystad",
+    "lat": -44.033304,
+    "lon": -159.228266,
+    "temp": -14.9,
+    "humidity": 21.6
+  },
+  {
+    "city": "West Haskellhaven",
+    "lat": 79.144131,
+    "lon": -178.573761,
+    "temp": 19.4,
+    "humidity": 77.6
+  },
+  {
+    "city": "Kuhlmanmouth",
+    "lat": 46.997423,
+    "lon": 11.862597,
+    "temp": -7.3,
+    "humidity": 95.3
+  },
+  {
+    "city": "New Gilberto",
+    "lat": 37.029407,
+    "lon": 98.243202,
+    "temp": -19.1,
+    "humidity": 49.2
+  },
+  {
+    "city": "Nickolasborough",
+    "lat": 86.323389,
+    "lon": 167.619972,
+    "temp": 21.4,
+    "humidity": 64.6
+  },
+  {
+    "city": "North Concepcion",
+    "lat": -25.729631,
+    "lon": 53.881302,
+    "temp": -15,
+    "humidity": 0.6
+  }
+]

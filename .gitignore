@@ -18,7 +18,6 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 
-jest.config.js
 .jest/
 coverage/
 

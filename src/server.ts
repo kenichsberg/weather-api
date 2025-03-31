@@ -1,0 +1,230 @@
+import express, { Request, Response } from 'express'
+import { pool, initDb } from './db'
+import { PoolClient } from 'pg'
+import multer from 'multer'
+import { createReadStream } from 'fs'
+import copy from 'pg-copy-streams'
+import * as JSONStream from 'jsonstream-next'
+import { randomUUID } from 'crypto'
+
+const copyFrom = copy.from
+const upload = multer({ dest: 'uploads/' })
+const app = express()
+const port = 3000
+
+app.use(express.json())
+
+
+const BATCH_SIZE = 10000
+const MAX_CONCURRENT_BATCHES = 5
+const MAX_JOBS = 10
+
+const jobStatuses: Map<string, { status: string, processed: number}>
+ = new Map()
+
+let isBulkInsertRunning = false
+
+
+type Weather = {
+  city: string
+  lat: number
+  lon: number
+  temp: number
+  humidity: number
+}
+
+
+function addJob (jobId: string) {
+  if (jobStatuses.size >= MAX_JOBS) {
+    const oldestKey = jobStatuses.keys().next().value
+    if (oldestKey) {
+      jobStatuses.delete(oldestKey)
+    }
+  }
+  jobStatuses.set(jobId, {
+     status: 'in-progress',
+     processed: 0,
+   })
+}
+
+
+function getJobStatus (jobId: string) {
+  return jobStatuses.get(jobId) || null
+}
+
+
+function updateJobStatus(
+  jobId: string,
+  status: string,
+  processedInc: number = 0
+) {
+  const jobStatus = getJobStatus(jobId)
+  if (typeof jobStatus?.processed === 'number') {
+    jobStatuses.set(
+      jobId,
+      {
+        status,
+        processed: jobStatus.processed + processedInc,
+      }
+    )
+  }
+}
+
+
+async function createTempCitiesTable (client: PoolClient) {
+  return await client.query(`
+    CREATE TEMP TABLE IF NOT EXISTS temp_cities (
+      city TEXT,
+      lat DOUBLE PRECISION,
+      lon DOUBLE PRECISION,
+      temp DOUBLE PRECISION,
+      humidity DOUBLE PRECISION
+    );
+  `)
+}
+
+
+async function dropTempCitiesTable(client: PoolClient) {
+  return await client.query(`DROP TABLE temp_cities;`)
+}
+
+
+async function mergeCitiesTables(client: PoolClient) {
+  return await client.query(`
+    BEGIN;
+    INSERT INTO cities (city, lat, lon, temp, humidity)
+    SELECT city, lat, lon, temp, humidity FROM temp_cities;
+    COMMIT;
+  `)
+}
+
+
+async function insertBatch(client: PoolClient, records: Weather[]) {
+  return new Promise<void>((resolve, reject) => {
+    const stream = client.query(copyFrom(`COPY temp_cities (city, lat, lon, temp, humidity) FROM STDIN WITH (FORMAT csv)`))
+
+    const transformedRecords = records.map(record => {
+      return `${record.city},${record.lat},${record.lon},${record.temp},${record.humidity}\n`
+    }).join('')
+
+    stream.write(transformedRecords)
+    stream.end()
+
+    stream.on('finish', resolve)
+    stream.on('error', reject)
+  })
+}
+
+
+async function runBulkInsert(jobId: string, filePath: string) {
+  addJob(jobId)
+
+  const client = await pool.connect()
+  await createTempCitiesTable(client)
+
+  const fileStream = createReadStream(filePath)
+  const jsonStream = fileStream.pipe(JSONStream.parse('*'))
+
+  let batch: Weather[] = []
+  let batchPromises: Promise<void>[] = []
+  let processedCount = 0
+
+  jsonStream.on('data', async (record) => {
+    batch.push(record)
+
+    if (batch.length >= BATCH_SIZE) {
+      const batchCopy = batch
+      batch = []
+
+      if (batchPromises.length >= MAX_CONCURRENT_BATCHES) {
+        await Promise.race(batchPromises)
+      }
+
+      const batchPromise = insertBatch(client, batchCopy).finally(() => {
+        processedCount += batchCopy.length
+        updateJobStatus(jobId, 'in-progress', processedCount)
+        batchPromises = batchPromises.filter(p => p !== batchPromise)
+      })
+
+      batchPromises.push(batchPromise)
+    }
+  })
+
+
+  return new Promise<void>((resolve, reject) => {
+    jsonStream.on('end', async () => {
+      if (batch.length > 0) {
+        batchPromises.push(insertBatch(client, batch).finally(() => {
+          processedCount += batch.length
+        }))
+      }
+
+      await Promise.all(batchPromises)
+      await mergeCitiesTables(client)
+      await dropTempCitiesTable(client)
+      updateJobStatus(jobId, 'completed', processedCount)
+
+      isBulkInsertRunning = false
+      client.release()
+      resolve()
+    })
+
+    jsonStream.on('error', async (err) => {
+      console.error(err)
+      await dropTempCitiesTable(client)
+      updateJobStatus(jobId, 'failed')
+
+      isBulkInsertRunning = false
+      client.release()
+      reject()
+    })
+
+  })
+}
+
+
+// Bulk insert endpoint
+app.post('/bulk-insert', upload.single('file'), async (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).send('File is required')
+  }
+
+  const isAsync = req.query.async === 'true'
+  const jobId = randomUUID()
+
+  if (isBulkInsertRunning) {
+    return res.status(429).json({ message: 'Bulk insert already in progress. Try again later.' })
+  }
+  isBulkInsertRunning = true
+  
+  if (isAsync) {
+    res.status(202)
+      .set('Location', `/status/${jobId}`)
+      .json({ jobId, status: 'in-progress', processed: 0 })
+    await runBulkInsert(jobId, req.file.path)
+
+  } else {
+    await runBulkInsert(jobId, req.file.path)
+    const jobStatus = getJobStatus(jobId)
+    res.status(200).json({ ...jobStatus, status: 'completed' })
+  }
+})
+
+
+// Job status endpoint
+app.get('/bulk-insert/status/:jobId', (req: Request, res: Response) => {
+  const job = getJobStatus(req.params.jobId)
+  if (!job) return res.status(404).send('Job not found')
+  res.json(job)
+})
+
+
+/*
+app.listen(port, async () => {
+  await initDb()
+  console.log(`Server running on http://localhost:${port}`)
+})
+  */
+
+
+export { app }
