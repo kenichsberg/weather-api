@@ -20,9 +20,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    profiles:
-      - prod
-      - dev
 
   api:
     build: .
@@ -32,17 +29,17 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_USER: "${DB_HOST}"
+      DB_USER: "${DB_USER}"
       DB_PASSWORD: "${DB_PASSWORD}"
       DB_NAME: "${DB_NAME}"
       DB_HOST: db
       DB_PORT: "${DB_PORT}"
       PORT: 3000
+    env_file:
+      - .env
     ports:
       - "3000:3000"
-    command: ["node", "dist/index.js"]
-    profiles:
-      - prod
+    command: ["node", "dist/server.js"]
 
 volumes:
   pg_data:

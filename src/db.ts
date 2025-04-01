@@ -1,5 +1,9 @@
-import { Pool, Client } from 'pg'
+import pg from 'pg'
 import dotenv from 'dotenv'
+
+
+const Pool = pg.Pool
+const Client = pg.Client
 
 const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
 dotenv.config({ path: envFile })

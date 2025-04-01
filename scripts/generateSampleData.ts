@@ -29,19 +29,26 @@ const generateRandomWeatherData = (): Weather => {
 }
 
 
-const generateSampleData = (numCities: number) => {
-  const weathers: Weather[] = []
-  for (let i = 0; i < numCities; i++) {
-    weathers.push(generateRandomWeatherData())
+const generateSampleData = (filePath:string, numCities: number) => {
+  let remainingRows = numCities
+  let weathers: Weather[]
+
+  while (remainingRows > 0) {
+    const batchSize = Math.min(remainingRows, 1_000_000)
+    weathers = []
+    for (let i = 0; i < batchSize; i++) {
+      weathers.push(generateRandomWeatherData())
+    }
+    writeFileSync(filePath, JSON.stringify(weathers, null, 2), { flush: true})
+    remainingRows -= batchSize
+    console.log('Remaining rows: ', remainingRows)
   }
-  return weathers
 }
 
+const filePath = './tests/fixtures/large-sample.json'
 
-const sampleData = generateSampleData(100)
+generateSampleData(filePath, 1_000_000_000)
 
-const filePath = './tests/fixtures/sample.json'
-writeFileSync(filePath, JSON.stringify(sampleData, null, 2))
 
 console.log(`Sample data generated and saved to ${filePath}`)
 

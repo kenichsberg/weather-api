@@ -1,14 +1,21 @@
-FROM node:22-alpine
+FROM node:lts as build
 
 WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm install --only=production
-
+COPY package*.json ./
+RUN npm ci
 COPY . .
-
 RUN npm run build
 
-CMD ["node", "dist/index.js"]
+
+FROM node:lts-slim
+
+ENV NODE_ENV production
+USER node
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY --from=build /app/dist ./dist
+
+CMD ["node", "dist/server.js"]
 
 EXPOSE 3000

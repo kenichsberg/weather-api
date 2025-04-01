@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import { pool } from './db'
+import { pool } from './db.js'
 import { PoolClient } from 'pg'
 import multer from 'multer'
 import { createReadStream } from 'fs'
@@ -143,8 +143,7 @@ async function runBulkInsert(jobId: string, filePath: string) {
       }
 
       const batchPromise = insertBatch(client, batchCopy).finally(() => {
-        processedCount += batchCopy.length
-        updateJobStatus(jobId, 'in-progress', processedCount)
+        updateJobStatus(jobId, 'in-progress', batchCopy.length)
         batchPromises = batchPromises.filter(p => p !== batchPromise)
       })
 
@@ -157,14 +156,14 @@ async function runBulkInsert(jobId: string, filePath: string) {
     jsonStream.on('end', async () => {
       if (batch.length > 0) {
         batchPromises.push(insertBatch(client, batch).finally(() => {
-          processedCount += batch.length
+        updateJobStatus(jobId, 'in-progress', batch.length)
         }))
       }
 
       await Promise.all(batchPromises)
       await mergeCitiesTables(client)
       await dropTempCitiesTable(client)
-      updateJobStatus(jobId, 'completed', processedCount)
+      updateJobStatus(jobId, 'completed')
 
       isBulkInsertRunning = false
       client.release()
@@ -207,7 +206,7 @@ router.post('/bulk-insert', upload.single('file'), async (req: Request, res: Res
   
   if (isAsync) {
     res.status(202)
-      .set('Location', `/status/${jobId}`)
+      .set('Location', `/api/bulk-insert/status/${jobId}`)
       .json({ jobId, status: 'in-progress', processed: 0 })
     await runBulkInsert(jobId, req.file.path)
     return
