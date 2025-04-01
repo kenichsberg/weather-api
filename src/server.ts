@@ -183,6 +183,11 @@ async function runBulkInsert(jobId: string, filePath: string) {
 }
 
 
+function celsiusToFahrenheit(celsius: number) {
+  return  celsius * 9 / 5 + 32
+}
+
+
 // Bulk insert endpoint
 app.post('/bulk-insert', upload.single('file'), async (req: Request, res: Response) => {
   if (!req.file) {
@@ -195,6 +200,7 @@ app.post('/bulk-insert', upload.single('file'), async (req: Request, res: Respon
   if (isBulkInsertRunning) {
     return res.status(429).json({ message: 'Bulk insert already in progress. Try again later.' })
   }
+
   isBulkInsertRunning = true
   
   if (isAsync) {
@@ -202,11 +208,15 @@ app.post('/bulk-insert', upload.single('file'), async (req: Request, res: Respon
       .set('Location', `/status/${jobId}`)
       .json({ jobId, status: 'in-progress', processed: 0 })
     await runBulkInsert(jobId, req.file.path)
+    return
+  } 
 
+  await runBulkInsert(jobId, req.file.path)
+  const jobStatus = getJobStatus(jobId)
+  if (jobStatus?.status === 'completed') {
+    res.status(200).json(jobStatus)
   } else {
-    await runBulkInsert(jobId, req.file.path)
-    const jobStatus = getJobStatus(jobId)
-    res.status(200).json({ ...jobStatus, status: 'completed' })
+    res.status(500).json({ message: 'Bulk insert failed'})
   }
 })
 
@@ -216,6 +226,34 @@ app.get('/bulk-insert/status/:jobId', (req: Request, res: Response) => {
   const job = getJobStatus(req.params.jobId)
   if (!job) return res.status(404).send('Job not found')
   res.json(job)
+})
+
+
+
+// Nearest city endpoint
+app.get('/nearest-city', async (req, res) => {
+  const { lat, lon, unit = 'C' } = req.query
+  if (!lat || !lon) return res.status(400).send('lat and lon are required')
+
+  const result = await pool.query(`
+      SELECT city, lat, lon, temp, humidity, ST_Distance(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)) AS distance
+      FROM cities
+      ORDER BY distance
+      LIMIT 1
+    `, [parseFloat(lon as string), parseFloat(lat as string)])
+
+  if (result.rows.length === 0) return res.status(404).send('No city found')
+
+  const { distance, ...response } = result.rows[0]
+  
+  if (unit === 'F') {
+    res.json({
+       ...response,
+       temp: celsiusToFahrenheit(response.temp)
+    })
+  } else {
+    res.json(response)
+  }
 })
 
 

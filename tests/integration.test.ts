@@ -17,6 +17,7 @@ async function query (sql: string) {
 }
 
 
+
 describe('Database Connection', () => {
   beforeAll(async () => {
     await resetDatabase()
@@ -27,6 +28,7 @@ describe('Database Connection', () => {
     expect(res.rows[0].current_database).toBe('testdb')
   })
 })
+
 
 
 describe('Bulk insert API', () => {
@@ -84,7 +86,7 @@ describe('Bulk insert API', () => {
 
 
     it('should return completed status', async () => {
-      await new Promise((r) => setTimeout(r, 2000))
+      await new Promise((r) => setTimeout(r, 500))
 
       const statusRes2 = await request(app).get(`/bulk-insert/status/${jobId}`)
       expect(statusRes2.status).toBe(200)
@@ -98,8 +100,71 @@ describe('Bulk insert API', () => {
     })
   })
 
+
   it('should return 404 for an unknown job ID', async () => {
     const res = await request(app).get('/bulk-insert/status/unknown-job-id')
     expect(res.status).toBe(404)
+  })
+})
+
+
+
+describe('Nearest city', () => {
+  beforeAll(async () => {
+    await resetDatabase()
+    await query(`
+      INSERT INTO cities (city, lat, lon, temp, humidity)
+      VALUES (
+        'Helsinki',
+        60.16952,
+        24.93545,
+        5.3,
+        96.7
+      ), (
+        'Espoo',
+        60.2052,
+        24.6522,
+        6.1,
+        95.2
+      ), (
+        'Vantaa',
+        60.29414,
+        25.04099,
+        4.9,
+        97.0
+      ), (
+        'Rovaniemi',
+        66.5,
+        25.71667,
+        2.4,
+        90.1
+      )
+      `)
+  })
+
+  it('should return Helsinki', async () => {
+    const res = await request(app).get(`/nearest-city?lat=60.1&lon=24.9`)
+    // console.log(res.body)
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveProperty('city')
+    expect(res.body).toHaveProperty('lat')
+    expect(res.body).toHaveProperty('lon')
+    expect(res.body).toHaveProperty('temp')
+    expect(res.body).toHaveProperty('humidity')
+    expect(res.body.city).toBe('Helsinki')
+    expect(res.body.temp).toBeCloseTo(5.3)
+  })
+
+  it('should return Rovaniemi with temp in Fahrenheit', async () => {
+    const res = await request(app).get(`/nearest-city?lat=65.1&lon=25.9&unit=F`)
+    // console.log(res.body)
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveProperty('city')
+    expect(res.body).toHaveProperty('lat')
+    expect(res.body).toHaveProperty('lon')
+    expect(res.body).toHaveProperty('temp')
+    expect(res.body).toHaveProperty('humidity')
+    expect(res.body.city).toBe('Rovaniemi')
+    expect(res.body.temp).toBeCloseTo(36.32)
   })
 })
