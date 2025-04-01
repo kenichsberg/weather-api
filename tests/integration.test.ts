@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, beforeAll } from '@jest/globals'
 import request from 'supertest'
-import { app } from '../src/server'
+import { app } from '../src/app'
 import { pool, initDb } from '../src/db'
 
 
@@ -38,7 +38,7 @@ describe('Bulk insert API', () => {
 
   it('should insert all the data in a file', async () => {
     const res = await request(app)
-      .post('/bulk-insert')
+      .post('/api/bulk-insert')
       .attach('file', 'tests/fixtures/sample.json')
 
     expect(res.status).toBe(200)
@@ -60,7 +60,7 @@ describe('Bulk insert API', () => {
 
     it('should start an async bulk insert and return 202 with Location header', async () => {
       const res = await request(app)
-        .post('/bulk-insert?async=true')
+        .post('/api/bulk-insert?async=true')
         .attach('file', 'tests/fixtures/sample.json')
 
       expect(res.status).toBe(202)
@@ -76,7 +76,7 @@ describe('Bulk insert API', () => {
 
 
     it('should return initial status', async () => {
-      const statusRes1 = await request(app).get(`/bulk-insert/status/${jobId}`)
+      const statusRes1 = await request(app).get(`/api/bulk-insert/status/${jobId}`)
       expect(statusRes1.status).toBe(200)
       expect(statusRes1.body).toHaveProperty('status')
       expect(statusRes1.body).toHaveProperty('processed')
@@ -88,7 +88,7 @@ describe('Bulk insert API', () => {
     it('should return completed status', async () => {
       await new Promise((r) => setTimeout(r, 500))
 
-      const statusRes2 = await request(app).get(`/bulk-insert/status/${jobId}`)
+      const statusRes2 = await request(app).get(`/api/bulk-insert/status/${jobId}`)
       expect(statusRes2.status).toBe(200)
       expect(statusRes2.body).toHaveProperty('status')
       expect(statusRes2.body).toHaveProperty('processed')
@@ -102,7 +102,7 @@ describe('Bulk insert API', () => {
 
 
   it('should return 404 for an unknown job ID', async () => {
-    const res = await request(app).get('/bulk-insert/status/unknown-job-id')
+    const res = await request(app).get('/api/bulk-insert/status/unknown-job-id')
     expect(res.status).toBe(404)
   })
 })
@@ -143,7 +143,7 @@ describe('Nearest city', () => {
   })
 
   it('should return Helsinki', async () => {
-    const res = await request(app).get(`/nearest-city?lat=60.1&lon=24.9`)
+    const res = await request(app).get(`/api/nearest-city?lat=60.1&lon=24.9`)
     // console.log(res.body)
     expect(res.status).toBe(200)
     expect(res.body).toHaveProperty('city')
@@ -156,7 +156,7 @@ describe('Nearest city', () => {
   })
 
   it('should return Rovaniemi with temp in Fahrenheit', async () => {
-    const res = await request(app).get(`/nearest-city?lat=65.1&lon=25.9&unit=F`)
+    const res = await request(app).get(`/api/nearest-city?lat=65.1&lon=25.9&unit=F`)
     // console.log(res.body)
     expect(res.status).toBe(200)
     expect(res.body).toHaveProperty('city')
