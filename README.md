@@ -15,7 +15,7 @@ Node.js application starts listening on [localhost:3000](http://localhost:3000)
 ```http
 POST  /api/bulk-insert
 ```
-Asynchronously Upload a file and save data in DB. Immediately returns 202 with `Location` header for monitoring progress.
+Asynchronously Upload a file and save data in DB. Immediately returns `202` with `Location` header for monitoring progress.
 
 This endpoint doesn't accept concurrent requests and in case there is an ongoing process, returns `429`.
 
@@ -52,7 +52,7 @@ GET  /api/bulk-insert/status/<jobId>
 
 > | http code     | content-type                      | response                                                            |
 > |---------------|-----------------------------------|---------------------------------------------------------------------|
-> | `200`         | `application/json`       | `{ jobId: <jobId>, status: 'in-progress'|'completed'|'failed', processed: 0 }`                                |
+> | `200`         | `application/json`       | `{ jobId: <jobId>, status: 'in-progress'\|'completed'\|'failed', processed: <processed row number> }`                                |
 > | `404`         | `text/plain;charset=UTF-8`                 | `Job not found`                            |
 
 <br/>
@@ -82,27 +82,27 @@ GET  /api/nearest-city?lat=<lat>&lon=<lon>&unit=<temp-unit>
 
 ### Data schema
 
-Since there were no requirements for data schema, I left data schema as in input file format, but for production, obviously, the data should be normalized (separate cities/lat,lon and temp/hummidity).
+Since there were no requirements for data schema, I left data schema as input file format, but for production, the data should be *normalized* (separate cities/lat,lon and temp/hummidity).
 
-I added a **geom** column with type `Geometry` for efficiently querying the nearest location.
+I added a **geom** column with the type `Geometry` to efficiently query the nearest location.
 
 ### Bulk insert
 
 To optimize performance, the input data are batched and inserted into a *staging* table first via `Copy` command.
 
-After all data are inserted, the *staging* table will be renamed and replaced with the existing one.
+After all data are inserted, the existing table will be replaced with the *staging* one.
 
-I tested with 10 million records and import was done in several minutes on my laptop.
+On my laptop, the import of 10 million records was done in several minutes.
 
-(You can generate a sample json file with 10 million records by running command `npx tsx scripts/generateSampleData.ts`)
+(You can generate a sample JSON file with 10 million records by running the command `npx tsx scripts/generateSampleData.ts`)
 
 ### Query the nearest city
 
-I tried to add index by `CREATE INDEX idx_cities_geom ON cities USING GIST (geom);`.
+I tried to add an index by `CREATE INDEX idx_cities_geom ON cities USING GIST (geom);`.
 
-However, Postgres doesn't use it even with  `SET enable_seqscan = OFF`.
+However, Postgres didn't use it for 10 million records even with  `SET enable_seqscan = OFF`.
 
-After experiments, finally I could force  Postgres to use the index with the following sql, narrowing the target data-set with `ST_DWithin`:
+After several experiments, I could finally force Postgres to use the index with the following SQL, narrowing the target data-set size with `ST_DWithin`:
 ```sql
 WITH nearest AS (
     SELECT
@@ -130,5 +130,6 @@ ORDER BY distance
 LIMIT 1
 ```
 
-But to apply this, the knowledge about dencity (or range) of the actual data is necessary to pick a proper narrowing threshold, so I didn't add the index.
-If we had index on cities table, we would better drop it before bulk insert.
+But to apply this, knowledge about the density (or range) of the actual data is necessary to pick a proper narrowing threshold, and even using the index, the query speed didn't improve on my laptop.
+
+That's why I didn't add the index.
