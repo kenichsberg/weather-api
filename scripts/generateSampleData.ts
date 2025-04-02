@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs'
+import fs, { writeFileSync } from 'fs'
 import { faker } from '@faker-js/faker'
 
 type Weather = {
@@ -32,22 +32,50 @@ const generateRandomWeatherData = (): Weather => {
 const generateSampleData = (filePath:string, numCities: number) => {
   let remainingRows = numCities
   let weathers: Weather[]
+  let batchStr: string
+  let isFirstWrite = true
+  const ws = fs.createWriteStream(filePath, { flags: 'a' });
 
+  ws.write('[\n')
   while (remainingRows > 0) {
+    // This is slower.
+    /*
+    if (isFirstWrite) {
+      isFirstWrite = false
+    } else {
+      ws.write(',\n')
+    }
+    ws.write(JSON.stringify(generateRandomWeatherData(), null, 2))
+    remainingRows--
+    if (remainingRows % 1_000_000 === 0) console.log('Remaining rows: ', remainingRows)
+    */
+    if (isFirstWrite) {
+      isFirstWrite = false
+    } else {
+      ws.write(',\n')
+    }
+
     const batchSize = Math.min(remainingRows, 1_000_000)
     weathers = []
+
     for (let i = 0; i < batchSize; i++) {
       weathers.push(generateRandomWeatherData())
     }
-    writeFileSync(filePath, JSON.stringify(weathers, null, 2), { flush: true})
+
+    batchStr = JSON.stringify(weathers, null, 2)
+    batchStr = batchStr.substring(1, batchStr.length - 1)
+    ws.write(batchStr)
+    
     remainingRows -= batchSize
     console.log('Remaining rows: ', remainingRows)
   }
+  ws.write(']\n')
+  ws.end()
 }
 
 const filePath = './tests/fixtures/large-sample.json'
 
-generateSampleData(filePath, 1_000_000_000)
+generateSampleData(filePath, 10_000_000)
 
 
 console.log(`Sample data generated and saved to ${filePath}`)

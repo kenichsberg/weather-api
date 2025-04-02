@@ -129,7 +129,6 @@ async function runBulkInsert(jobId: string, filePath: string) {
 
   let batch: Weather[] = []
   let batchPromises: Promise<void>[] = []
-  let processedCount = 0
 
   jsonStream.on('data', async (record) => {
     batch.push(record)
@@ -142,7 +141,9 @@ async function runBulkInsert(jobId: string, filePath: string) {
         await Promise.race(batchPromises)
       }
 
-      const batchPromise = insertBatch(client, batchCopy).finally(() => {
+      const batchPromise = insertBatch(client, batchCopy)
+        .catch(error => { throw error })
+        .finally(() => {
         updateJobStatus(jobId, 'in-progress', batchCopy.length)
         batchPromises = batchPromises.filter(p => p !== batchPromise)
       })
@@ -155,9 +156,11 @@ async function runBulkInsert(jobId: string, filePath: string) {
   return new Promise<void>((resolve, reject) => {
     jsonStream.on('end', async () => {
       if (batch.length > 0) {
-        batchPromises.push(insertBatch(client, batch).finally(() => {
-        updateJobStatus(jobId, 'in-progress', batch.length)
-        }))
+        batchPromises.push(insertBatch(client, batch)
+          .catch(error => { throw error })
+          .finally(() => {
+            updateJobStatus(jobId, 'in-progress', batch.length)
+          }))
       }
 
       await Promise.all(batchPromises)
@@ -208,19 +211,33 @@ router.post('/bulk-insert', upload.single('file'), async (req: Request, res: Res
     res.status(202)
       .set('Location', `/api/bulk-insert/status/${jobId}`)
       .json({ jobId, status: 'in-progress', processed: 0 })
-    await runBulkInsert(jobId, req.file.path)
+
+    ;(async filePath => {
+      try {
+        await runBulkInsert(jobId, filePath)
+      } catch (error) {
+        updateJobStatus(jobId, 'failed')
+        console.error(error)
+      }
+    }
+    )(req.file.path)
     return
-  } 
-
-  await runBulkInsert(jobId, req.file.path)
-  const jobStatus = getJobStatus(jobId)
-  removeJob(jobId)
-
-  if (jobStatus?.status === 'completed') {
-    res.status(200).json(jobStatus)
-  } else {
-    res.status(500).json({ message: 'Bulk insert failed'})
   }
+
+  try {
+    await runBulkInsert(jobId, req.file.path)
+    const jobStatus = getJobStatus(jobId)
+    if (jobStatus?.status === 'completed') {
+      res.status(200).json(jobStatus)
+    } else {
+      res.status(500).json({ message: 'Bulk insert failed' })
+    }
+  } catch (error) {
+    res.status(500).json({ message: error })
+  } finally {
+    removeJob(jobId)
+  }
+
 })
 
 
