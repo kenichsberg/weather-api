@@ -92,8 +92,6 @@ To optimize performance, the input data are batched and inserted into a *staging
 
 After all data are inserted, the existing table will be replaced with the *staging* one.
 
-On my laptop, the import of 10 million records was done in several minutes.
-
 (You can generate a sample JSON file with 10 million records by running the command `npx tsx scripts/generateSampleData.ts`)
 
 ### Query the nearest city
