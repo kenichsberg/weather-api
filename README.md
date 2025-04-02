@@ -130,6 +130,6 @@ ORDER BY distance
 LIMIT 1
 ```
 
-But to apply this, knowledge about the density (or range) of the actual data is necessary to pick a proper narrowing threshold, and even using the index, the query speed didn't improve on my laptop.
+But to apply this, knowledge about the density (or range) of the actual data is necessary to pick a proper narrowing threshold.
 
 That's why I didn't add the index.
