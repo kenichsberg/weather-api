@@ -20,7 +20,7 @@ const dbConfig = { ...baseConfig, database: process.env.DB_NAME }
 const pool = new Pool(dbConfig)
 
 
-async function initDb () {
+async function initDb() {
   const client =  new Client({
     ...baseConfig,
     database: 'template1'
@@ -29,25 +29,27 @@ async function initDb () {
   
   try {
     try {
-      await client.query(`CREATE DATABASE ${process.env.DB_NAME}`)
+      await client.query(`CREATE DATABASE ${process.env.DB_NAME};`)
     } catch {
-      console.log(`${process.env.DB_NAME} already exists. Skip 'CREATE DATSBASE'`)
+      console.log(`${process.env.DB_NAME} already exists. (skipping 'CREATE DATSBASE')`)
     }
-    await client.query('CREATE EXTENSION IF NOT EXISTS postgis')
+    await client.query('CREATE EXTENSION IF NOT EXISTS postgis;')
 
     const poolClient = await pool.connect()
     try {
       await poolClient.query(`
         CREATE TABLE IF NOT EXISTS cities (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        city TEXT NOT NULL,
-        lat DOUBLE PRECISION NOT NULL,
-        lon DOUBLE PRECISION NOT NULL,
-        temp DOUBLE PRECISION NOT NULL,
-        humidity DOUBLE PRECISION NOT NULL,
-        geom GEOMETRY(Point, 4326) GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lon, lat), 4326)) STORED
-        )
-        `)
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          city TEXT NOT NULL,
+          lat DOUBLE PRECISION NOT NULL,
+          lon DOUBLE PRECISION NOT NULL,
+          temp DOUBLE PRECISION NOT NULL,
+          humidity DOUBLE PRECISION NOT NULL,
+          geom GEOMETRY(Point, 4326) GENERATED ALWAYS AS (
+            ST_SetSRID(ST_MakePoint(lon, lat), 4326)
+          ) STORED
+        );
+      `)
     } finally {
       poolClient.release()
     }
