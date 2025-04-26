@@ -48,6 +48,9 @@ async function initDb() {
           ) STORED
         );
       `)
+      await poolClient.query(
+        'CREATE INDEX IF NOT EXISTS idx_cities_geom ON cities USING GIST (ST_SetSRID(ST_MakePoint(lon, lat), 4326));',
+      )
     } finally {
       poolClient.release()
     }

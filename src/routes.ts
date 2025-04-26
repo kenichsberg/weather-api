@@ -95,6 +95,7 @@ async function swapCitiesTables(client: PoolClient) {
     ALTER TABLE _cities_staging SET LOGGED;
     ALTER TABLE _cities_staging RENAME TO cities;
     ALTER TABLE cities ADD PRIMARY KEY (id);
+    CREATE INDEX idx_cities_geom ON cities USING GIST (ST_SetSRID(ST_MakePoint(lon, lat), 4326));
     COMMIT;
   `)
 }
@@ -239,9 +240,9 @@ router.get('/nearest-city', async (req, res, next) => {
   try {
     const result = await pool.query<Weather>(
       `
-      SELECT city, lat, lon, temp, humidity, ST_Distance(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)) AS distance
+      SELECT city, lat, lon, temp, humidity
       FROM cities
-      ORDER BY distance
+      ORDER BY geom <-> ST_SetSRID(ST_MakePoint($1, $2), 4326)
       LIMIT 1
     `,
       [longitude.toString(), latitude.toString()],
