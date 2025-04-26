@@ -3,10 +3,10 @@ import { pool } from './db.js'
 import { PoolClient } from 'pg'
 import multer from 'multer'
 import { createReadStream } from 'fs'
+import path from 'path'
 import copy from 'pg-copy-streams'
 import * as JSONStream from 'jsonstream-next'
 import { randomUUID } from 'crypto'
-
 
 const router = Router()
 const copyFrom = copy.from
@@ -16,13 +16,9 @@ const BATCH_SIZE = 10000
 const MAX_CONCURRENT_BATCHES = 5
 const MAX_JOBS = 10
 
-
-const jobStatuses: Map<string, { status: string, processed: number}>
- = new Map()
-
+const jobStatuses: Map<string, { status: string; processed: number }> = new Map()
 
 let isBulkInsertRunning = false
-
 
 type Weather = {
   city: string
@@ -32,7 +28,6 @@ type Weather = {
   humidity: number
 }
 
-
 function addJob(jobId: string) {
   if (jobStatuses.size >= MAX_JOBS) {
     const oldestKey = jobStatuses.keys().next().value ?? ''
@@ -40,39 +35,28 @@ function addJob(jobId: string) {
   }
 
   return jobStatuses.set(jobId, {
-     status: 'in-progress',
-     processed: 0,
-   })
+    status: 'in-progress',
+    processed: 0,
+  })
 }
-
 
 function getJobStatus(jobId: string) {
   return jobStatuses.get(jobId)
 }
 
-
-function updateJobStatus(
-  jobId: string,
-  status: string,
-  processedInc: number = 0
-) {
+function updateJobStatus(jobId: string, status: string, processedInc: number = 0) {
   const jobStatus = getJobStatus(jobId)
   if (!jobStatus) return
 
-  return jobStatuses.set(
-    jobId,
-    {
-      status,
-      processed: jobStatus.processed + processedInc,
-    }
-  )
+  return jobStatuses.set(jobId, {
+    status,
+    processed: jobStatus.processed + processedInc,
+  })
 }
-
 
 function removeJob(jobId: string) {
   return jobStatuses.delete(jobId)
 }
-
 
 async function createCitiesStagingTable(client: PoolClient) {
   return await client.query(`
@@ -84,14 +68,17 @@ async function createCitiesStagingTable(client: PoolClient) {
   `)
 }
 
-
 async function copyBatchToStaging(client: PoolClient, records: Weather[]) {
   return new Promise<void>((resolve, reject) => {
-    const stream = client.query(copyFrom(`COPY _cities_staging (city, lat, lon, temp, humidity) FROM STDIN WITH (FORMAT csv)`))
+    const stream = client.query(
+      copyFrom(`COPY _cities_staging (city, lat, lon, temp, humidity) FROM STDIN WITH (FORMAT csv)`),
+    )
 
-    const transformedRecords = records.map(record => {
-      return `${record.city},${record.lat},${record.lon},${record.temp},${record.humidity}\n`
-    }).join('')
+    const transformedRecords = records
+      .map((record) => {
+        return `${record.city},${record.lat},${record.lon},${record.temp},${record.humidity}\n`
+      })
+      .join('')
 
     stream.write(transformedRecords)
     stream.end()
@@ -100,7 +87,6 @@ async function copyBatchToStaging(client: PoolClient, records: Weather[]) {
     stream.on('error', reject)
   })
 }
-
 
 async function swapCitiesTables(client: PoolClient) {
   return await client.query(`
@@ -112,7 +98,6 @@ async function swapCitiesTables(client: PoolClient) {
     COMMIT;
   `)
 }
-
 
 async function runBulkInsert(jobId: string, filePath: string) {
   const fileStream = createReadStream(filePath)
@@ -134,39 +119,39 @@ async function runBulkInsert(jobId: string, filePath: string) {
 
       const batchClient = await pool.connect()
       const batchPromise = copyBatchToStaging(batchClient, batchCopy)
-        .then(async _ => {
+        .then(async (_) => {
           updateJobStatus(jobId, 'in-progress', batchCopy.length)
         })
-        .catch(async error => {
+        .catch(async (error) => {
           updateJobStatus(jobId, 'failed')
           throw error
         })
         .finally(() => {
           batchClient.release()
-          batchPromises = batchPromises.filter(p => p !== batchPromise)
+          batchPromises = batchPromises.filter((p) => p !== batchPromise)
         })
 
       batchPromises.push(batchPromise)
     }
   })
 
-
   return new Promise<void>((resolve, reject) => {
     jsonStream.on('end', async () => {
       const batchClient = await pool.connect()
       if (batch.length > 0) {
-        batchPromises.push(copyBatchToStaging(batchClient, batch)
-          .then(async _ => {
-            updateJobStatus(jobId, 'in-progress', batch.length)
-
-          })
-          .catch(async error => {
-            updateJobStatus(jobId, 'failed')
-            throw error
-          })
-          .finally(() => {
-            batchClient.release()
-          }))
+        batchPromises.push(
+          copyBatchToStaging(batchClient, batch)
+            .then(async (_) => {
+              updateJobStatus(jobId, 'in-progress', batch.length)
+            })
+            .catch(async (error) => {
+              updateJobStatus(jobId, 'failed')
+              throw error
+            })
+            .finally(() => {
+              batchClient.release()
+            }),
+        )
       }
 
       await Promise.all(batchPromises)
@@ -176,27 +161,28 @@ async function runBulkInsert(jobId: string, filePath: string) {
       resolve()
     })
 
-    jsonStream.on('error', error => {
+    jsonStream.on('error', (error) => {
       console.error(error)
       updateJobStatus(jobId, 'failed')
       reject()
 
       throw error
     })
-
   })
 }
 
-
 function celsiusToFahrenheit(celsius: number) {
-  return  celsius * 9 / 5 + 32
+  return (celsius * 9) / 5 + 32
 }
-
 
 // Bulk insert endpoint
 router.post('/bulk-insert', upload.single('file'), async (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).send('File is required')
+  }
+
+  if (path.extname(req.file.originalname) !== '.json') {
+    return res.status(400).send('Invalid file type: required .json')
   }
 
   const jobId = randomUUID()
@@ -208,21 +194,19 @@ router.post('/bulk-insert', upload.single('file'), async (req: Request, res: Res
   isBulkInsertRunning = true
   addJob(jobId)
 
-  res.status(202)
+  res
+    .status(202)
     .set('Location', `/api/bulk-insert/status/${jobId}`)
     .json({ jobId, status: 'in-progress', processed: 0 })
-    
-  ;(async filePath => {
+  ;(async (filePath) => {
     const client = await pool.connect()
 
     try {
       await createCitiesStagingTable(client)
       await runBulkInsert(jobId, filePath)
-
     } catch (error) {
       console.error(error)
       updateJobStatus(jobId, 'failed')
-
     } finally {
       isBulkInsertRunning = false
       await client.query('DROP TABLE IF EXISTS _cities_staging;')
@@ -231,48 +215,58 @@ router.post('/bulk-insert', upload.single('file'), async (req: Request, res: Res
   })(req.file.path)
 })
 
-
 // Job status endpoint
-router.get('/bulk-insert/status/:jobId', (req: Request, res: Response) => {
+router.get('/bulk-insert/status/:jobId', (req, res) => {
   const job = getJobStatus(req.params.jobId)
   if (!job) return res.status(404).send('Job not found')
 
   res.status(200).json(job)
 })
 
-
-
 // Nearest city endpoint
-router.get('/nearest-city', async (req, res) => {
-  const { lat, lon, unit = 'C' } = req.query
+router.get('/nearest-city', async (req, res, next) => {
+  const { lat: _lat, lon: _lon, unit = 'C' } = req.query
 
-  if (!lat || !lon) {
+  if (!_lat || !_lon) {
     return res.status(400).send('lat and lon are required')
   }
 
-  const result = await pool.query(`
+  const latitude = parseFloat(_lat as string)
+  const longitude = parseFloat(_lon as string)
+  if (isNaN(latitude)) return res.status(400).send(`Invalid lat value: '${_lat}'`)
+  if (isNaN(longitude)) return res.status(400).send(`Invalid lon value: '${_lon}'`)
+
+  try {
+    const result = await pool.query<Weather>(
+      `
       SELECT city, lat, lon, temp, humidity, ST_Distance(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)) AS distance
       FROM cities
       ORDER BY distance
       LIMIT 1
-    `, [parseFloat(lon as string), parseFloat(lat as string)])
+    `,
+      [longitude.toString(), latitude.toString()],
+    )
 
-  if (result.rows.length === 0) {
-    return res.status(404).send('No city found')
+    if (result.rows.length === 0) {
+      return res.status(404).send('No city found')
+    }
+
+    const { city, lat, lon, temp, humidity } = result.rows[0]
+
+    if (unit === 'F') {
+      return res.status(200).json({
+        city,
+        lat,
+        lon,
+        humidity,
+        temp: celsiusToFahrenheit(temp),
+      })
+    }
+
+    res.status(200).json({ city, lat, lon, temp, humidity })
+  } catch (error: any) {
+    next(error)
   }
-
-  const { distance, ...response } = result.rows[0]
-  
-  if (unit === 'F') {
-    return res.status(200).json({
-      ...response,
-      temp: celsiusToFahrenheit(response.temp)
-    })
-  }
-
-  res.status(200).json(response)
 })
-
-
 
 export { router }

@@ -10,11 +10,10 @@ type Weather = {
 }
 
 const generateRandomGeo = () => {
-  const lat = (Math.random() * 180 - 90).toFixed(6)  
-  const lon = (Math.random() * 360 - 180).toFixed(6) 
+  const lat = (Math.random() * 180 - 90).toFixed(6)
+  const lon = (Math.random() * 360 - 180).toFixed(6)
   return { lat, lon }
 }
-
 
 const generateRandomWeatherData = (): Weather => {
   const { lat, lon } = generateRandomGeo()
@@ -24,31 +23,19 @@ const generateRandomWeatherData = (): Weather => {
     lat: parseFloat(lat),
     lon: parseFloat(lon),
     temp: parseFloat((Math.random() * 60 - 20).toFixed(1)),
-    humidity: parseFloat((Math.random() * 100).toFixed(1))
+    humidity: parseFloat((Math.random() * 100).toFixed(1)),
   }
 }
 
-
-const generateSampleData = (filePath:string, numCities: number) => {
+const generateSampleData = (filePath: string, numCities: number) => {
   let remainingRows = numCities
   let weathers: Weather[]
   let batchStr: string
   let isFirstWrite = true
-  const ws = fs.createWriteStream(filePath, { flags: 'a' });
+  const ws = fs.createWriteStream(filePath, { flags: 'a' })
 
   ws.write('[\n')
   while (remainingRows > 0) {
-    // This is slower.
-    /*
-    if (isFirstWrite) {
-      isFirstWrite = false
-    } else {
-      ws.write(',\n')
-    }
-    ws.write(JSON.stringify(generateRandomWeatherData(), null, 2))
-    remainingRows--
-    if (remainingRows % 1_000_000 === 0) console.log('Remaining rows: ', remainingRows)
-    */
     if (isFirstWrite) {
       isFirstWrite = false
     } else {
@@ -65,7 +52,7 @@ const generateSampleData = (filePath:string, numCities: number) => {
     batchStr = JSON.stringify(weathers, null, 2)
     batchStr = batchStr.substring(1, batchStr.length - 1)
     ws.write(batchStr)
-    
+
     remainingRows -= batchSize
     console.log('Remaining rows: ', remainingRows)
   }
@@ -77,6 +64,4 @@ const filePath = './tests/fixtures/large-sample.json'
 
 generateSampleData(filePath, 10_000_000)
 
-
 console.log(`Sample data generated and saved to ${filePath}`)
-

@@ -1,7 +1,6 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
 
-
 const Pool = pg.Pool
 const Client = pg.Client
 
@@ -19,14 +18,13 @@ const dbConfig = { ...baseConfig, database: process.env.DB_NAME }
 
 const pool = new Pool(dbConfig)
 
-
 async function initDb() {
-  const client =  new Client({
+  const client = new Client({
     ...baseConfig,
-    database: 'template1'
+    database: 'template1',
   })
   await client.connect()
-  
+
   try {
     try {
       await client.query(`CREATE DATABASE ${process.env.DB_NAME};`)
@@ -59,4 +57,3 @@ async function initDb() {
 }
 
 export { dbConfig, pool, initDb }
-

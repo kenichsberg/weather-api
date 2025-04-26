@@ -1,95 +1,91 @@
-import { describe, it, expect, beforeEach, beforeAll } from '@jest/globals'
-import request from 'supertest'
-import { app } from '../src/app'
-import { pool, initDb } from '../src/db'
+import { describe, it, expect, beforeEach, beforeAll } from "@jest/globals";
+import request from "supertest";
+import { app } from "../src/app";
+import { pool, initDb } from "../src/db";
 
-
-async function resetDatabase () {
-  await initDb()
-  await query('DELETE FROM cities')
+async function resetDatabase() {
+  await initDb();
+  await query("DELETE FROM cities");
 }
 
-async function query (sql: string) {
-  const client = await pool.connect()
-  const result = await client.query(sql)
-  client.release()
-  return result
+async function query(sql: string) {
+  const client = await pool.connect();
+  const result = await client.query(sql);
+  client.release();
+  return result;
 }
 
-
-
-describe('Database Connection', () => {
+describe("Database Connection", () => {
   beforeAll(async () => {
-    await resetDatabase()
-  })
+    await resetDatabase();
+  });
 
-  it('should connect to the testdb database', async () => {
-    const res = await pool.query('SELECT current_database()')
-    expect(res.rows[0].current_database).toBe('testdb')
-  })
-})
+  it("should connect to the testdb database", async () => {
+    const res = await pool.query("SELECT current_database()");
+    expect(res.rows[0].current_database).toBe("testdb");
+  });
+});
 
-
-
-describe('Bulk insert API', () => {
+describe("Bulk insert API", () => {
   beforeAll(async () => {
-    await resetDatabase()
-  })
-  let jobId: string
+    await resetDatabase();
+  });
+  let jobId: string;
 
-  it('should start an async bulk insert and return 202 with Location header', async () => {
+  it("should start an async bulk insert and return 202 with Location header", async () => {
     const res = await request(app)
-      .post('/api/bulk-insert?async=true')
-      .attach('file', 'tests/fixtures/sample.json')
+      .post("/api/bulk-insert?async=true")
+      .attach("file", "tests/fixtures/sample.json");
 
-    expect(res.status).toBe(202)
-    expect(res.headers.location).toMatch(/\/status\//)
-    expect(res.body).toHaveProperty('jobId')
-    expect(res.body).toHaveProperty('status')
-    expect(res.body).toHaveProperty('processed')
-    expect(res.body.status).toBe('in-progress')
-    expect(res.body.processed).toBe(0)
+    expect(res.status).toBe(202);
+    expect(res.headers.location).toMatch(/\/status\//);
+    expect(res.body).toHaveProperty("jobId");
+    expect(res.body).toHaveProperty("status");
+    expect(res.body).toHaveProperty("processed");
+    expect(res.body.status).toBe("in-progress");
+    expect(res.body.processed).toBe(0);
 
-    jobId = res.body.jobId
-  })
+    jobId = res.body.jobId;
+  });
 
+  it("should return initial status", async () => {
+    const statusRes1 = await request(app).get(
+      `/api/bulk-insert/status/${jobId}`,
+    );
+    expect(statusRes1.status).toBe(200);
+    expect(statusRes1.body).toHaveProperty("status");
+    expect(statusRes1.body).toHaveProperty("processed");
+    expect(statusRes1.body.status).toBe("in-progress");
+    expect(statusRes1.body.processed).toBe(0);
+  });
 
-  it('should return initial status', async () => {
-    const statusRes1 = await request(app).get(`/api/bulk-insert/status/${jobId}`)
-    expect(statusRes1.status).toBe(200)
-    expect(statusRes1.body).toHaveProperty('status')
-    expect(statusRes1.body).toHaveProperty('processed')
-    expect(statusRes1.body.status).toBe('in-progress')
-    expect(statusRes1.body.processed).toBe(0)
-  })
+  it("should return completed status", async () => {
+    await new Promise((r) => setTimeout(r, 500));
 
+    const statusRes2 = await request(app).get(
+      `/api/bulk-insert/status/${jobId}`,
+    );
+    expect(statusRes2.status).toBe(200);
+    expect(statusRes2.body).toHaveProperty("status");
+    expect(statusRes2.body).toHaveProperty("processed");
+    expect(statusRes2.body.status).toBe("completed");
+    expect(statusRes2.body.processed).toBe(100);
+    const result = await query("SELECT count(*) from cities;");
+    const processedCnt = parseInt(result.rows[0].count);
+    expect(processedCnt).toBe(100);
+  });
 
-  it('should return completed status', async () => {
-    await new Promise((r) => setTimeout(r, 500))
+  it("should return 404 for an unknown job ID", async () => {
+    const res = await request(app).get(
+      "/api/bulk-insert/status/unknown-job-id",
+    );
+    expect(res.status).toBe(404);
+  });
+});
 
-    const statusRes2 = await request(app).get(`/api/bulk-insert/status/${jobId}`)
-    expect(statusRes2.status).toBe(200)
-    expect(statusRes2.body).toHaveProperty('status')
-    expect(statusRes2.body).toHaveProperty('processed')
-    expect(statusRes2.body.status).toBe('completed')
-    expect(statusRes2.body.processed).toBe(100)
-    const result = await query('SELECT count(*) from cities;')
-    const processedCnt = parseInt(result.rows[0].count)
-    expect(processedCnt).toBe(100)
-  })
-
-
-  it('should return 404 for an unknown job ID', async () => {
-    const res = await request(app).get('/api/bulk-insert/status/unknown-job-id')
-    expect(res.status).toBe(404)
-  })
-})
-
-
-
-describe('Nearest city', () => {
+describe("Nearest city", () => {
   beforeAll(async () => {
-    await resetDatabase()
+    await resetDatabase();
     await query(`
       INSERT INTO cities (city, lat, lon, temp, humidity)
       VALUES (
@@ -117,32 +113,34 @@ describe('Nearest city', () => {
         2.4,
         90.1
       )
-      `)
-  })
+      `);
+  });
 
-  it('should return Helsinki', async () => {
-    const res = await request(app).get(`/api/nearest-city?lat=60.1&lon=24.9`)
+  it("should return Helsinki", async () => {
+    const res = await request(app).get(`/api/nearest-city?lat=60.1&lon=24.9`);
     // console.log(res.body)
-    expect(res.status).toBe(200)
-    expect(res.body).toHaveProperty('city')
-    expect(res.body).toHaveProperty('lat')
-    expect(res.body).toHaveProperty('lon')
-    expect(res.body).toHaveProperty('temp')
-    expect(res.body).toHaveProperty('humidity')
-    expect(res.body.city).toBe('Helsinki')
-    expect(res.body.temp).toBeCloseTo(5.3)
-  })
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("city");
+    expect(res.body).toHaveProperty("lat");
+    expect(res.body).toHaveProperty("lon");
+    expect(res.body).toHaveProperty("temp");
+    expect(res.body).toHaveProperty("humidity");
+    expect(res.body.city).toBe("Helsinki");
+    expect(res.body.temp).toBeCloseTo(5.3);
+  });
 
-  it('should return Rovaniemi with temp in Fahrenheit', async () => {
-    const res = await request(app).get(`/api/nearest-city?lat=65.1&lon=25.9&unit=F`)
+  it("should return Rovaniemi with temp in Fahrenheit", async () => {
+    const res = await request(app).get(
+      `/api/nearest-city?lat=65.1&lon=25.9&unit=F`,
+    );
     // console.log(res.body)
-    expect(res.status).toBe(200)
-    expect(res.body).toHaveProperty('city')
-    expect(res.body).toHaveProperty('lat')
-    expect(res.body).toHaveProperty('lon')
-    expect(res.body).toHaveProperty('temp')
-    expect(res.body).toHaveProperty('humidity')
-    expect(res.body.city).toBe('Rovaniemi')
-    expect(res.body.temp).toBeCloseTo(36.32)
-  })
-})
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("city");
+    expect(res.body).toHaveProperty("lat");
+    expect(res.body).toHaveProperty("lon");
+    expect(res.body).toHaveProperty("temp");
+    expect(res.body).toHaveProperty("humidity");
+    expect(res.body.city).toBe("Rovaniemi");
+    expect(res.body.temp).toBeCloseTo(36.32);
+  });
+});

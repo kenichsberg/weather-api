@@ -7,9 +7,9 @@ module.exports = {
       '\\.[jt]s?$': [
         'ts-jest',
         {
-          'useESM': true
-        }
-      ]
+          useESM: true,
+        },
+      ],
     },
     moduleNameMapper: {
       '^\\./app.js$': '../src/app',
@@ -17,15 +17,8 @@ module.exports = {
       '^\\./routes.js$': '../src/routes',
       '^\\./server.js$': '../src/server',
     },
-    extensionsToTreatAsEsm: [
-      ".ts"
-    ],
-    moduleFileExtensions: [
-      'ts',
-      'js',
-    ],
-    testMatch: [
-      '**/tests/**/*.test.ts',
-    ],
+    extensionsToTreatAsEsm: ['.ts'],
+    moduleFileExtensions: ['ts', 'js'],
+    testMatch: ['**/tests/**/*.test.ts'],
   },
 }
